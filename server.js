@@ -7,7 +7,7 @@ const { notFound, errorHandler } = require('./middleware/errorHandler')
 
 const app = express()
 
-const allowedOrigins = ['http://localhost:5173', process.env.CLIENT_URL].filter(Boolean)
+const allowedOrigins = ['http://localhost:5173', 'https://mockinterviewappv1.netlify.app', process.env.CLIENT_URL].filter(Boolean)
 
 app.use(
   cors({
