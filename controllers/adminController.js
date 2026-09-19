@@ -33,7 +33,7 @@ exports.createUser = async (req, res, next) => {
       return res.status(422).json({ message: 'Password min 6 chars' })
     if (!isEnum(role, ['student', 'instructor', 'admin']))
       return res.status(422).json({ message: 'Invalid role' })
-    if (status && !isEnum(status, ['approved', 'pending', 'blocked']))
+    if (status && !isEnum(status, ['approved', 'pending', 'blocked', 'deactivated']))
       return res.status(422).json({ message: 'Invalid status' })
 
     const exists = await User.findOne({ email: email.trim().toLowerCase() })
@@ -65,19 +65,36 @@ exports.createUser = async (req, res, next) => {
 exports.updateUserStatus = async (req, res, next) => {
   try {
     const { status } = req.body
-    if (!['approved', 'blocked', 'pending'].includes(status))
+    const allowed = ['approved', 'blocked', 'pending', 'deactivated']
+    if (!allowed.includes(status))
       return res.status(422).json({ message: 'Invalid status' })
 
     const user = await User.findById(req.params.id)
     if (!user) return res.status(404).json({ message: 'User not found' })
 
-    if (user.role === 'admin')
-      return res.status(403).json({ message: 'Cannot modify admin accounts' })
+    if (user.role === 'admin') {
+      if (user._id.toString() === req.user._id.toString())
+        return res.status(403).json({ message: 'You cannot change your own status.' })
 
-    if (user.role === 'student' && status === 'pending')
-      return res.status(422).json({
-        message: 'Students cannot be set to pending they are auto-approved.',
+      if (status !== 'deactivated')
+        return res.status(422).json({
+          message: 'Admin accounts can only be deactivated.',
+        })
+
+      const activeAdmins = await User.countDocuments({
+        role: 'admin',
+        status: 'approved',
       })
+      if (activeAdmins <= 1)
+        return res.status(422).json({
+          message: 'Cannot deactivate the last active admin.',
+        })
+    } else {
+      if (user.role === 'student' && status === 'pending')
+        return res.status(422).json({
+          message: 'Students cannot be set to pending — they are auto-approved.',
+        })
+    }
 
     user.status = status
     await user.save()

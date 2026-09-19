@@ -62,6 +62,8 @@ exports.login = async (req, res, next) => {
 
     if (user.status === 'blocked')
       return res.status(403).json({ message: 'Account blocked by admin' })
+    if (user.status === 'deactivated')
+      return res.status(403).json({ message: 'This account has been deactivated.' })
     if (user.status === 'pending')
       return res.status(403).json({ message: 'Account pending approval by admin' })
 

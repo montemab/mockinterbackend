@@ -9,7 +9,7 @@ const {
   escapeRegex,
 } = require('../utils/validators')
 
-const CATEGORIES = ['React', 'JavaScript', 'Node.js', 'MongoDB', 'DSA', 'CSS', 'HR', 'Other']
+const CATEGORIES = ['React', 'JavaScript', 'Node.js', 'MongoDB', 'DSA', 'CSS', 'HR']
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
 
 const normalizeMcqOptions = (rawOptions, rawCorrect) => {
